@@ -23,8 +23,8 @@ t_begin "read worker PID" && {
 	t_info "worker_pid=$worker_pid"
 }
 
-t_begin "issue graceful shutdown (SIGQUIT) and wait for termination" && {
-	kill -QUIT $unicorn_pid
+t_begin "issue graceful shutdown (SIGTERM) and wait for termination" && {
+	kill -TERM $unicorn_pid
 
 	while kill -0 $unicorn_pid >/dev/null 2>&1
 	do

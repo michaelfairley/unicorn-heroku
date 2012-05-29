@@ -21,7 +21,7 @@ this:
 
         Unicorn::HttpServer::START_CTX[0] = "/some/path/to/bin/unicorn"
 
-Then use HUP to reload, and then continue with the USR2+QUIT upgrade
+Then use HUP to reload, and then continue with the USR2+TERM upgrade
 sequence.
 
 Environment variable pollution when exec-ing a new process (with USR2)

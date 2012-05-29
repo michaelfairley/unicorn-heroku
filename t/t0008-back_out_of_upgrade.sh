@@ -70,7 +70,7 @@ t_begin "reload old master process" && {
 }
 
 t_begin "gracefully kill new master and ensure it dies" && {
-	kill -QUIT $new_master_pid
+	kill -TERM $new_master_pid
 	i=0
 	while kill -0 $new_worker_pid 2>/dev/null
 	do

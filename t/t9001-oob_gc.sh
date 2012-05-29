@@ -38,7 +38,7 @@ t_begin "GC is started after 5 requests" && {
 }
 
 t_begin "killing succeeds" && {
-	kill -QUIT $unicorn_pid
+	kill -TERM $unicorn_pid
 }
 
 t_begin "check_stderr" && check_stderr

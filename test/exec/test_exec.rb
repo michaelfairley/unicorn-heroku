@@ -21,7 +21,7 @@ unless try_require('rack')
 end
 
 class ExecTest < Test::Unit::TestCase
-  trap(:QUIT, 'IGNORE')
+  trap(:TERM, 'IGNORE')
 
   HI = <<-EOS
 use Rack::ContentLength
@@ -87,7 +87,7 @@ run lambda { |env|
     FileUtils.rmtree(@tmpdir)
     @sockets.each { |path| File.unlink(path) rescue nil }
     loop do
-      Process.kill('-QUIT', 0)
+      Process.kill('-TERM', 0)
       begin
         Process.waitpid(-1, Process::WNOHANG) or break
       rescue Errno::ECHILD
@@ -139,7 +139,7 @@ EOF
     results = hit(["http://#@addr:#@port/"])
     assert_equal other.path, results.first
 
-    Process.kill(:QUIT, pid)
+    Process.kill(:TERM, pid)
     ensure
       FileUtils.rmtree(other.path)
   end
@@ -175,7 +175,7 @@ EOF
     results = hit(["http://#@addr:#@port/"])
     assert_equal other.path, results.first
 
-    Process.kill(:QUIT, pid)
+    Process.kill(:TERM, pid)
     ensure
       FileUtils.rmtree(other.path)
   end
@@ -217,7 +217,7 @@ EOF
     assert File.exist?("#{other.path}/stdout_log_here")
     wait_master_ready("#{other.path}/stderr_log_here")
 
-    Process.kill(:QUIT, pid)
+    Process.kill(:TERM, pid)
     ensure
       FileUtils.rmtree(other.path)
   end
@@ -350,7 +350,7 @@ EOF
     wait_for_file(old_file)
     wait_for_file(pid_file)
     old_pid = File.read(old_file).to_i
-    Process.kill(:QUIT, old_pid)
+    Process.kill(:TERM, old_pid)
     wait_for_death(old_pid)
 
     ucfg.syswrite("timeout %(#{pid_file})\n") # introduce a bug
@@ -394,8 +394,8 @@ EOF
     assert_equal String, results[1].class
 
     assert_nothing_raised do
-      Process.kill(:QUIT, current_pid)
-      Process.kill(:QUIT, new_pid)
+      Process.kill(:TERM, current_pid)
+      Process.kill(:TERM, new_pid)
     end
   end
 
@@ -420,7 +420,7 @@ EOF
     wait_for_file(old_file)
     wait_for_file(pid_file)
     old_pid = File.read(old_file).to_i
-    Process.kill(:QUIT, old_pid)
+    Process.kill(:TERM, old_pid)
     wait_for_death(old_pid)
 
     File.unlink("config.ru") # break reloading
@@ -456,8 +456,8 @@ EOF
     assert_equal String, results[0].class
 
     assert_nothing_raised do
-      Process.kill(:QUIT, current_pid)
-      Process.kill(:QUIT, new_pid)
+      Process.kill(:TERM, current_pid)
+      Process.kill(:TERM, new_pid)
     end
   end
 
@@ -599,7 +599,7 @@ EOF
     end
     assert_equal 5, log.grep(/done reopening logs/).size
     assert_equal 0, log.grep(/reopening logs\.\.\./).size
-    assert_nothing_raised { Process.kill(:QUIT, pid) }
+    assert_nothing_raised { Process.kill(:TERM, pid) }
     status = nil
     assert_nothing_raised { pid, status = Process.waitpid2(pid) }
     assert status.success?, "exited successfully"
@@ -848,7 +848,7 @@ EOF
     assert_nothing_raised do
       Process.kill(:USR2, pid)
       wait_for_file("#{pid_file}.oldbin")
-      Process.kill(:QUIT, pid)
+      Process.kill(:TERM, pid)
     end
     wait_for_death(pid)
 
@@ -868,7 +868,7 @@ EOF
     assert_nothing_raised do
       Process.kill(:USR2, pid)
       wait_for_file("#{pid_file}.oldbin")
-      Process.kill(:QUIT, pid)
+      Process.kill(:TERM, pid)
     end
     wait_for_death(pid)
 
@@ -881,7 +881,7 @@ EOF
     assert $?.success?
     assert_equal expect_size, curr_fds.size, curr_fds.inspect
 
-    Process.kill(:QUIT, pid)
+    Process.kill(:TERM, pid)
     wait_for_death(pid)
   end
 
@@ -908,7 +908,7 @@ EOF
       r.close
       bodies = Hash.new(0)
       at_exit { pids.syswrite(bodies.inspect) }
-      trap(:TERM) { exit(0) }
+      trap(:QUIT) { exit(0) }
       nr = 0
       loop {
         rv = Net::HTTP.get(uri)
@@ -930,7 +930,7 @@ EOF
     assert daemon_pid > 0
     Process.kill(:HUP, daemon_pid)
     assert_equal '2', r.read(1)
-    assert_nothing_raised { Process.kill(:TERM, hitter) }
+    assert_nothing_raised { Process.kill(:QUIT, hitter) }
     _, hitter_status = Process.waitpid2(hitter)
     assert(hitter_status.success?,
            "invalid: #{hitter_status.inspect} #{File.read(pids.path)}" \
@@ -944,7 +944,7 @@ EOF
       assert x > 0
       assert pids[x] > 0
     }
-    assert_nothing_raised { Process.kill(:QUIT, daemon_pid) }
+    assert_nothing_raised { Process.kill(:TERM, daemon_pid) }
     wait_for_death(daemon_pid)
   end
 
@@ -965,7 +965,7 @@ EOF
       res2 = hit(["http://#{Unicorn::Const::DEFAULT_LISTEN}/"])
       assert_match %r{\d+}, res2.first
       assert res2.first != res.first
-      assert_nothing_raised { Process.kill(:QUIT, daemon_pid) }
+      assert_nothing_raised { Process.kill(:TERM, daemon_pid) }
       wait_for_death(daemon_pid)
     end
   end
@@ -978,7 +978,7 @@ EOF
         Process.kill(:USR2, daemon_pid)
         wait_for_file("#{pid_path}.oldbin")
         wait_for_file(pid_path)
-        Process.kill(:QUIT, daemon_pid)
+        Process.kill(:TERM, daemon_pid)
         wait_for_death(daemon_pid)
       }
       daemon_pid = File.read(pid_path).to_i
@@ -995,7 +995,7 @@ EOF
       res3 = hit(["http://#{Unicorn::Const::DEFAULT_LISTEN}/"])
       assert res2.first != res3.first
 
-      assert_nothing_raised { Process.kill(:QUIT, daemon_pid) }
+      assert_nothing_raised { Process.kill(:TERM, daemon_pid) }
       wait_for_death(daemon_pid)
     end
   end

@@ -59,7 +59,7 @@ t_begin "SIGSTOP and SIGCONT on unicorn master does not kill worker" && {
 }
 
 t_begin "stop server" && {
-	kill -QUIT $unicorn_pid
+	kill -TERM $unicorn_pid
 }
 
 t_begin "check stderr" && check_stderr

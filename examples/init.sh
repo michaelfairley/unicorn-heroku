@@ -32,11 +32,11 @@ start)
 	$CMD
 	;;
 stop)
-	sig QUIT && exit 0
+	sig TERM && exit 0
 	echo >&2 "Not running"
 	;;
 force-stop)
-	sig TERM && exit 0
+	sig QUIT && exit 0
 	echo >&2 "Not running"
 	;;
 restart|reload)
@@ -45,7 +45,7 @@ restart|reload)
 	$CMD
 	;;
 upgrade)
-	if sig USR2 && sleep 2 && sig 0 && oldsig QUIT
+	if sig USR2 && sleep 2 && sig 0 && oldsig TERM
 	then
 		n=$TIMEOUT
 		while test -s $old_pid && test $n -ge 0

@@ -60,7 +60,7 @@ elsif RB_V[0] >= 1 && RB_V[1] >= 9
 end
 
 class RailsTest < Test::Unit::TestCase
-  trap(:QUIT, 'IGNORE')
+  trap(:TERM, 'IGNORE')
 
   COMMON_TMP = Tempfile.new('unicorn_tmp') unless defined?(COMMON_TMP)
 
@@ -267,7 +267,7 @@ logger Logger.new('#{COMMON_TMP.path}')
     return if @start_pid != $$
 
     if @pid
-      Process.kill(:QUIT, @pid)
+      Process.kill(:TERM, @pid)
       _, status = Process.waitpid2(@pid)
       assert status.success?
     end
@@ -275,7 +275,7 @@ logger Logger.new('#{COMMON_TMP.path}')
     Dir.chdir(@pwd)
     FileUtils.rmtree(@tmpdir)
     loop do
-      Process.kill('-QUIT', 0)
+      Process.kill('-TERM', 0)
       begin
         Process.waitpid(-1, Process::WNOHANG) or break
       rescue Errno::ECHILD

@@ -42,7 +42,7 @@ t_begin "app only dispatched twice" && {
 }
 
 t_begin "killing succeeds" && {
-	kill -QUIT $unicorn_pid
+	kill -TERM $unicorn_pid
 }
 
 t_done

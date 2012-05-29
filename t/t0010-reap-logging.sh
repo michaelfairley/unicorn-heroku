@@ -30,7 +30,7 @@ t_begin "ensure log of 1st reap is an ERROR" && {
 
 t_begin "kill 2nd worker gracefully" && {
 	pid_2=$(curl http://$listen/)
-	kill -QUIT $pid_2
+	kill -TERM $pid_2
 }
 
 t_begin "wait for 3rd worker=0 to start " && {

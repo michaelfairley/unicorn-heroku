@@ -155,7 +155,7 @@ end
 
 def assert_shutdown(pid)
   wait_master_ready("test_stderr.#{pid}.log")
-  assert_nothing_raised { Process.kill(:QUIT, pid) }
+  assert_nothing_raised { Process.kill(:TERM, pid) }
   status = nil
   assert_nothing_raised { pid, status = Process.waitpid2(pid) }
   assert status.success?, "exited successfully"
@@ -202,12 +202,12 @@ def reexec_usr2_quit_test(pid, pid_file)
   # kill old master process
   assert_not_equal pid, new_pid
   assert_equal pid, old_pid
-  assert_nothing_raised { Process.kill(:QUIT, old_pid) }
+  assert_nothing_raised { Process.kill(:TERM, old_pid) }
   assert_nothing_raised { retry_hit(["http://#{@addr}:#{@port}/"]) }
   wait_for_death(old_pid)
   assert_equal new_pid, File.read(pid_file).to_i
   assert_nothing_raised { retry_hit(["http://#{@addr}:#{@port}/"]) }
-  assert_nothing_raised { Process.kill(:QUIT, new_pid) }
+  assert_nothing_raised { Process.kill(:TERM, new_pid) }
 end
 
 def reexec_basic_test(pid, pid_file)
@@ -230,7 +230,7 @@ def reexec_basic_test(pid, pid_file)
   new_pid = File.read(pid_file).to_i
   assert_not_equal pid, new_pid
   assert_nothing_raised { Process.kill(0, new_pid) }
-  assert_nothing_raised { Process.kill(:QUIT, new_pid) }
+  assert_nothing_raised { Process.kill(:TERM, new_pid) }
 end
 
 def wait_for_file(path)

@@ -88,7 +88,7 @@ class SignalsTest < Test::Unit::TestCase
       sock.syswrite("GET / HTTP/1.0\r\n\r\n")
       buf = rd.readpartial(1)
       wait_master_ready("test_stderr.#{pid}.log")
-      Process.kill(:INT, pid)
+      Process.kill(:QUIT, pid)
       Process.waitpid(pid)
     end
     assert_equal '.', buf
@@ -125,7 +125,7 @@ class SignalsTest < Test::Unit::TestCase
     assert diff > 1.0, "diff was #{diff.inspect}"
     assert diff < 60.0
     ensure
-      Process.kill(:TERM, pid) rescue nil
+      Process.kill(:QUIT, pid) rescue nil
   end
 
   def test_response_write

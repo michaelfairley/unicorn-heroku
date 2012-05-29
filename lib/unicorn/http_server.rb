@@ -71,7 +71,7 @@ class Unicorn::HttpServer
   #
   # To change your unicorn executable to a different path without downtime,
   # you can set the following in your Unicorn config file, HUP and then
-  # continue with the traditional USR2 + QUIT upgrade steps:
+  # continue with the traditional USR2 + TERM upgrade steps:
   #
   #   Unicorn::HttpServer::START_CTX[0] = "/home/bofh/1.9.2/bin/unicorn"
   START_CTX = {
@@ -271,9 +271,9 @@ class Unicorn::HttpServer
         end
         maintain_worker_count if respawn
         master_sleep(sleep_time)
-      when :QUIT # graceful shutdown
+      when :TERM, :INT # graceful shutdown
         break
-      when :TERM, :INT # immediate shutdown
+      when :QUIT # immediate shutdown
         stop(false)
         break
       when :USR1 # rotate logs
@@ -287,7 +287,7 @@ class Unicorn::HttpServer
         if Unicorn::Configurator::RACKUP[:daemonized]
           respawn = false
           logger.info "gracefully stopping all workers"
-          kill_each_worker(:QUIT)
+          kill_each_worker(:TERM)
           self.worker_processes = 0
         else
           logger.info "SIGWINCH ignored because we're not daemonized"
@@ -319,7 +319,7 @@ class Unicorn::HttpServer
     self.listeners = []
     limit = Time.now + timeout
     until WORKERS.empty? || Time.now > limit
-      kill_each_worker(graceful ? :QUIT : :TERM)
+      kill_each_worker(graceful ? :TERM : :QUIT)
       sleep(0.1)
       reap_all_workers
     end
@@ -497,7 +497,7 @@ class Unicorn::HttpServer
     (off = WORKERS.size - worker_processes) == 0 and return
     off < 0 and return spawn_missing_workers
     WORKERS.dup.each_pair { |wpid,w|
-      w.nr >= worker_processes and kill_worker(:QUIT, wpid) rescue nil
+      w.nr >= worker_processes and kill_worker(:TERM, wpid) rescue nil
     }
   end
 
@@ -551,7 +551,7 @@ class Unicorn::HttpServer
   # traps for USR1, USR2, and HUP may be set in the after_fork Proc
   # by the user.
   def init_worker_process(worker)
-    # we'll re-trap :QUIT later for graceful shutdown iff we accept clients
+    # we'll re-trap :TERM later for graceful shutdown iff we accept clients
     EXIT_SIGS.each { |sig| trap(sig) { exit!(0) } }
     exit!(0) if (SIG_QUEUE & EXIT_SIGS)[0]
     WORKER_QUEUE_SIGS.each { |sig| trap(sig, nil) }
@@ -593,7 +593,7 @@ class Unicorn::HttpServer
 
     # closing anything we IO.select on will raise EBADF
     trap(:USR1) { nr = -65536; SELF_PIPE[0].close rescue nil }
-    trap(:QUIT) { worker = nil; LISTENERS.each { |s| s.close rescue nil }.clear }
+    trap(:TERM) { worker = nil; LISTENERS.each { |s| s.close rescue nil }.clear }
     logger.info "worker=#{worker.nr} ready"
 
     begin
@@ -671,7 +671,7 @@ class Unicorn::HttpServer
     config[:listeners].replace(@init_listeners)
     config.reload
     config.commit!(self)
-    kill_each_worker(:QUIT)
+    kill_each_worker(:TERM)
     Unicorn::Util.reopen_logs
     self.app = orig_app
     build_app! if preload_app
